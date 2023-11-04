@@ -1,0 +1,13 @@
+.vscode
+*.o
+*.out
+*.so
+*.swp
+./.vscode/*
+./**/*.o
+./**/*.out
+./**/*.so
+./**/*.swp
+./**/.vscode/*
+.editorconfig
+*.mp4
