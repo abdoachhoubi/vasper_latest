@@ -15,6 +15,7 @@ private:
 	std::string _cgi_path;
 	pid_t _cgi_pid;
 	int	inputpip;
+	int	outputpip;
 	Request req;
 
 public:
@@ -36,8 +37,6 @@ public:
 	const std::map<std::string, std::string> &getEnv() const;
 	const pid_t &getCgiPid() const;
 	const std::string &getCgiPath() const;
-
-	int findStart(const std::string path, const std::string delim);
 	std::string decode(std::string &path);
 
 	std::string getResponse();

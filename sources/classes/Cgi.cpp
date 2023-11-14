@@ -1,10 +1,11 @@
 #include "../../includes/main.hpp"
 
-/* Constructor */
+// TAG - Orthodox Canonical Form
 Cgi::Cgi()
 {
 	this->_cgi_pid = -1;
 	this->inputpip = 0;
+	this->outputpip = 1;
 	this->know = 0;
 	this->_exit_status = 0;
 	this->_cgi_path = "";
@@ -17,6 +18,7 @@ Cgi::Cgi(std::string path)
 	this->_cgi_pid = -1;
 	this->_exit_status = 0;
 	this->inputpip = 0;
+	this->outputpip = 1;
 	this->know = 0;
 	this->_cgi_path = path;
 	this->_ch_env = NULL;
@@ -47,6 +49,7 @@ Cgi::Cgi(const Cgi &other)
 	this->_ch_env = other._ch_env;
 	this->_argv = other._argv;
 	this->inputpip = other.inputpip;
+	this->outputpip = other.outputpip;
 	this->know = other.know;
 	this->_cgi_path = other._cgi_path;
 	this->_cgi_pid = other._cgi_pid;
@@ -63,22 +66,23 @@ Cgi &Cgi::operator=(const Cgi &other)
 		this->know = other.know;
 		this->_cgi_path = other._cgi_path;
 		this->inputpip = other.inputpip;
+		this->outputpip = other.outputpip;
 		this->_cgi_pid = other._cgi_pid;
 		this->_exit_status = other._exit_status;
 	}
 	return (*this);
 }
 
-/*Set functions */
+// TAG - Setters
 void Cgi::setCgiPid(pid_t cgi_pid) { this->_cgi_pid = cgi_pid; }
 void Cgi::setCgiPath(const std::string &cgi_path) { this->_cgi_path = cgi_path; }
 
-/* Get functions */
+// TAG - Getters
 const std::map<std::string, std::string> &Cgi::getEnv() const { return (this->_env); }
 const pid_t &Cgi::getCgiPid() const { return (this->_cgi_pid); }
 const std::string &Cgi::getCgiPath() const { return (this->_cgi_path); }
 
-/* initialization environment variable */
+// TAG - Initialize the environment variables
 void Cgi::initEnv(Request &req, Location &location)
 {
 	this->req = req;
@@ -120,19 +124,23 @@ void Cgi::initEnv(Request &req, Location &location)
 	this->_argv[2] = NULL;
 }
 
+// TAG - The main function that executes the CGI script
 void Cgi::execute(short &error_code)
 {
-	std::cout << "know " << this->know << std::endl;
-	if (this->know == 0) {
+	if (this->know == 0)
+	{
 		this->know = 1;
 		if (this->_argv[0] == NULL || this->_argv[1] == NULL)
 		{
 			error_code = INTERNAL_SERVER_ERROR;
 			return;
 		}
-		this->inputpip = open("./inputpip", O_RDWR | O_CREAT | O_TRUNC, 0666);
-				std::cout << "fd =" << this->inputpip << std::endl;
 
+		// TAG - Create the files (out and in)
+		if (req.getMethodStr() == "POST")
+			this->outputpip = open("./outputpip", O_RDWR | O_CREAT | O_TRUNC, 0666);
+		write(this->outputpip, req.getBody().c_str(), req.getBody().length());
+		this->inputpip = open("./inputpip", O_RDWR | O_CREAT | O_TRUNC, 0666);
 		if (this->inputpip == -1)
 			throw std::runtime_error("open error");
 
@@ -140,11 +148,18 @@ void Cgi::execute(short &error_code)
 
 		if (this->_cgi_pid == 0)
 		{
-			// Redirect stdin and stdout to the pipes
+			// TAG - Configuring redirection of stdin and stdout
+			if (req.getMethodStr() == "POST")
+			{
+				close(this->outputpip);
+				outputpip = open("./outputpip", O_RDONLY);
+				dup2(outputpip, STDIN_FILENO);
+				close(this->outputpip);
+			}
 			dup2(inputpip, STDOUT_FILENO);
-			close(inputpip);
+			close(this->inputpip);
 
-			// Execute the CGI script
+			// TAG - Execute the CGI script
 			this->_exit_status = execve(this->_argv[0], this->_argv, this->_ch_env);
 
 			std::cerr << "EXECVE FAILED" << std::endl;
@@ -152,90 +167,46 @@ void Cgi::execute(short &error_code)
 		}
 		else if (this->_cgi_pid > 0)
 		{
-			// Close the read end of the stdin pipe and the write end of the stdout pipe
+			// TAG - Close the files (out and in)
 			close(inputpip);
-
-			// Write the request body to the stdin of the CGI script
-			// write(stdin_pipe[1], req.getBody().c_str(), req.getBody().length());
-			// close(stdin_pipe[1]);
-
-			// std::cout << "pid before: " << this->_cgi_pid << std::endl;
-			// int res = waitpid(this->_cgi_pid, &this->_exit_status, WNOHANG);
-			// if (res == 0) {
-			// 	return ;
-			// }
-			// // else
-			// // {
-			// // 	if (WIFEXITED(this->_exit_status)) {
-			// // 		this->know = 2;
-			// // 		// Read the output from the stdout of the CGI script
-			// // 		char buffer[BUFSIZ];
-			// // 		ssize_t read_len;
-
-			// // 		filex = open("./vasper.cgi", O_CREAT | O_TRUNC | O_RDWR, 0777);
-			// // 		// DEBUG - INFINITE LOOP
-			// // 		while ((read_len = read(stdout_pipe[0], buffer, BUFSIZ)) > 0)
-			// // 		{
-			// // 			write(filex, buffer, read_len); // Write to the file or stdout as needed
-			// // 			std::cout << "makayna: " << buffer << std::endl;
-			// // 			// sleep(2);
-			// // 			// kill(this->_cgi_pid, SIGKILL);
-			// // 		}
-			// // 		close(stdout_pipe[0]);
-			// // 		// Wait for the CGI script to complete
-			// // 		error_code = 200;
-			// // 	}
-			// // }
+			if (req.getMethodStr() == "POST")
+				close(outputpip);
 		}
 		else
 		{
-			std::cout << "Fork failed" << std::endl;
+			std::cerr << "Fork failed" << std::endl;
 			error_code = INTERNAL_SERVER_ERROR;
 		}
-	} else {
+	}
+	else
+	{
 		int res = waitpid(this->_cgi_pid, &this->_exit_status, WNOHANG);
-		if (res == 0) {
-			return ;
+		if (res == 0)
+		{
+			return;
 		}
 		else
 		{
-			this->know = 2;
-			if (WIFEXITED(this->_exit_status)) {
-				std::cout << "fd = " << this->inputpip << std::endl;
+			// TAG - Check the status of the CGI script
+			if (WIFEXITED(this->_exit_status))
+			{
+				this->know = 2;
 				this->inputpip = open("./inputpip", O_RDONLY);
-				// Read the output from the stdout of the CGI script
+				// TAG - Read the response from the CGI script
 				char buffer[BUFSIZ];
 				ssize_t read_len;
 
 				filex = open("./vasper.cgi", O_CREAT | O_TRUNC | O_RDWR, 0777);
-				// DEBUG - INFINITE LOOP
 				while ((read_len = read(this->inputpip, buffer, BUFSIZ)) > 0)
-				{
-					write(filex, buffer, read_len); // Write to the file or stdout as needed
-					// std::cout << "makayna: " << buffer << std::endl;
-					// sleep(2);
-					// kill(this->_cgi_pid, SIGKILL);
-				}
+					write(filex, buffer, read_len);
 				close(this->inputpip);
-				// Wait for the CGI script to complete
 				error_code = 200;
 			}
 		}
 	}
 }
 
-int Cgi::findStart(const std::string path, const std::string delim)
-{
-	if (path.empty())
-		return (-1);
-	size_t poz = path.find(delim);
-	if (poz != std::string::npos)
-		return (poz);
-	else
-		return (-1);
-}
-
-/* Translation of parameters for QUERY_STRING environment variable */
+// TAG - Decode the path for query environment variable
 std::string Cgi::decode(std::string &path)
 {
 	size_t token = path.find("%");
@@ -250,6 +221,7 @@ std::string Cgi::decode(std::string &path)
 	return (path);
 }
 
+// TAG - Clear the CGI class
 void Cgi::clear()
 {
 	this->_cgi_pid = -1;
@@ -260,6 +232,7 @@ void Cgi::clear()
 	this->_env.clear();
 }
 
+// TAG - Get the response from the CGI script
 std::string Cgi::getResponse()
 {
 	std::string response;
@@ -276,6 +249,5 @@ std::string Cgi::getResponse()
 	else if (!file.good())
 		std::cout << "Unable to open CGI file" << std::endl;
 	response += "\0";
-	std::cout << "ggggggggggggggggggggggggg = '" << response << "'" << std::endl;
 	return (response);
 }

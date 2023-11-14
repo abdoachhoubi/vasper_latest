@@ -1,10 +1,10 @@
 #!/usr/bin/php-cgi
 <?php
-while(1);
-// sleep(7);
+
 // Check if the form has been submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Check if a file was uploaded successfully
+	// check all the items in the associative array $_FILES
     if (isset($_FILES['uploaded_file']) && $_FILES['uploaded_file']['error'] === UPLOAD_ERR_OK) {
         $uploadDir = './uploads/'; // Set the directory where you want to store uploaded files
 

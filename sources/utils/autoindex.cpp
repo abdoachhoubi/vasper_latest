@@ -14,7 +14,7 @@ std::string autoindex_style()
 		   "        min-height: 100dvh;\n"
 		   "        padding: 10%;\n"
 		   "        font-family: 'Courier New', Courier, monospace;\n"
-		      "        background-image: url(\"/vasper_website/assets/bg.png\");\n"
+		   "        background-image: url(\"/vasper_website/assets/bg.png\");\n"
 		   "        background-repeat: no-repeat;\n"
 		   "        background-size: cover;\n"
 		   "    }\n"
@@ -71,13 +71,16 @@ std::string create_autoindex_string(std::string dir, std::string dir_str, const 
 											"<span class=\"element directory\">\n"
 											"<a class=\"link\" href=\"../\">../</a>\n"
 											"</span>\n";
-
 	for (std::vector<std::string>::const_iterator it = files.begin(); it != files.end(); ++it)
 	{
 		std::string path_to_file = dir + *it;
 		bool is_directory = is_dir(path_to_file);
 		autoindex_string += "<span class=\"element" + std::string(is_directory ? " directory" : "") + "\">\n";
-		autoindex_string += "<a class=\"link\" href=\"" + std::string(dir_str[dir_str.length() - 1] == '/' ? dir_str : dir_str + "/") + *it + std::string(is_directory ? "/\">" : "\">") + *it + "</a>\n" + "</span>\n";
+		std::string file_path = dir + *it;
+		if (file_exists(file_path))
+			autoindex_string += "<a class=\"link\" href=\"" + std::string(dir_str[dir_str.length() - 1] == '/' ? dir_str : dir_str + "/") + *it + std::string(is_directory ? "/\">" : "\">") + *it + "</a>\n" + "</span>\n";
+		else
+			autoindex_string += "<a class=\"link\" href=\"" + *it + std::string(is_directory ? "/\">" : "\">") + *it + "</a>\n" + "</span>\n";
 	}
 
 	autoindex_string += "</div>\n"

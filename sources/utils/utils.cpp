@@ -55,8 +55,18 @@ std::vector<std::string> generateSubUris(const std::string &input)
 	std::vector<std::string> tokens;
 	std::string token;
 	std::stringstream ss(input);
+	std::string cumulativePath;
+
 	while (std::getline(ss, token, '/'))
-		tokens.push_back("/" + token);
+	{
+		cumulativePath += "/" + token;
+		tokens.push_back(cumulativePath);
+	}
+	for (size_t i = 0; i < tokens.size(); i++)
+	{
+		if (tokens[i].size() > 1)
+			tokens[i].erase(0, 1);
+	}
 	return tokens;
 }
 
@@ -82,4 +92,13 @@ std::string strtrim(const std::string &input)
 	while (end >= start && std::isspace(input[end]))
 		end--;
 	return input.substr(start, end - start + 1);
+}
+
+// TAG: Checks if a file exists
+bool file_exists(const std::string &path)
+{
+	struct stat file_info;
+	if (stat(path.c_str(), &file_info) != 0)
+		return false;
+	return true;
 }

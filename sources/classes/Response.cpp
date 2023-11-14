@@ -270,24 +270,18 @@ int Response::getController(Location location)
 		std::string file_extension = getPath().substr(getPath().find_last_of(".") + 1);
 		std::vector<std::string> exts = location.getCgiExtension();
 		std::vector<std::string> paths = location.getCgiPath();
-		int i = 0;
-		while (i < (int)exts.size())
+		if (location.getCGI())
 		{
-			if (((exts[i] == "*." + file_extension) || (exts[i] == "." + file_extension)) && location.getCGI())
+			for (size_t i = 0; i < exts.size(); i++)
 			{
-				isCGI = true;
-				_cgi_state = 1;
-				handleCgi(location);
-				// std::string res = "HTTP/1.1 " + to_string(statusCode) + " " + statusTextGen(statusCode) + "\r\n";
-				// std::string res = "";
-				// res += "Content-Type: text/html\r\n";
-				// res += "Content-Length: " + to_string(_response.length()) + "\r\n";
-				// res += "\r\n";
-				// res += _response;
-				// set_headers(res);
-				return 0;
+				if (((exts[i] == "*." + file_extension) || (exts[i] == "." + file_extension)))
+				{
+					isCGI = true;
+					_cgi_state = 1;
+					handleCgi(location);
+					return 0;
+				}
 			}
-			i++;
 		}
 		generateResponse(getPath(), 0, location);
 		_check = false;
@@ -357,16 +351,18 @@ int Response::postController(Location location)
 	std::string file_extension = getPath().substr(getPath().find_last_of(".") + 1);
 	std::vector<std::string> exts = location.getCgiExtension();
 	std::vector<std::string> paths = location.getCgiPath();
-	int i = 0;
-	while (i < (int)exts.size())
+	if (location.getCGI())
 	{
-		if (((exts[i] == "*." + file_extension) || (exts[i] == "." + file_extension)) && location.getCGI())
+		for (size_t i = 0; i < exts.size(); i++)
 		{
-			_cgi_state = 1;
-			handleCgi(location);
-			return 0;
+			if (((exts[i] == "*." + file_extension) || (exts[i] == "." + file_extension)))
+			{
+				isCGI = true;
+				_cgi_state = 1;
+				handleCgi(location);
+				return 0;
+			}
 		}
-		i++;
 	}
 	std::string upload_path = _server_conf.getUploadPath();
 	if (upload_path[upload_path.length() - 1] == '/')
@@ -771,7 +767,7 @@ int Response::handleCgi(Location location)
 	std::string path;
 	size_t pos;
 
-	if (this->_cgi_obj.know == 0) 
+	if (this->_cgi_obj.know == 0)
 	{
 		path = this->_req.getPath();
 		if (path[0] && path[0] == '/')
@@ -793,48 +789,34 @@ int Response::handleCgi(Location location)
 		_cgi_obj.clear();
 		_cgi_obj.setCgiPath(path);
 		_cgi_state = 1;
-		if (pipe(_cgi_fd) < 0)
-		{
-			statusCode = INTERNAL_SERVER_ERROR;
-			set_headers(generateErrorResponse(INTERNAL_SERVER_ERROR, _server_conf));
-			return (1);
-		}
 		_cgi_obj.initEnv(_req, location); // + URI
 		_cgi_obj.execute(statusCode);
-	} 
-	else {
+	}
+	else
+	{
 		_cgi_obj.execute(statusCode);
-		if (this->_cgi_obj.know != 2) {
-			std::cout << "dkhalllllll" << std::endl;
+		if (this->_cgi_obj.know != 2)
 			return (0);
-		}
-		std::cout << "----------------------------" << std::endl;
 		_response = _cgi_obj.getResponse();
-		std::cout << "reeeeeees " << _response << std::endl;
-		// check if response has some headers (Content-Length, Content-Type, etc)
 		if (_response.find("\r\n\r\n") != std::string::npos)
 		{
 			_headers = _response.substr(0, _response.find("\r\n\r\n"));
 			_response = _response.substr(_response.find("\r\n\r\n") + 4);
 		}
 		else
-		{
 			_headers = "Content-Type: text/html;";
-		}
-		// check if headers has a status code
 		if (_headers.find("Status:") != std::string::npos)
-		{
 			statusCode = atoi(_headers.substr(_headers.find("Status:") + 7, 4).c_str());
-			// _headers = _headers.substr(0, _headers.find("Status:"));
-		}
 		else
-		{
 			statusCode = SUCCESS;
+
+		if (statusCode != SUCCESS)
+		{
+			_headers = generateErrorResponse((error_pages)statusCode, _server_conf);
 		}
 
 		std::string res = "HTTP/1.1 " + to_string(statusCode) + " " + statusTextGen(statusCode) + "\r\n";
 		_response = res + _headers + "\r\n" + "Content-Length: " + to_string(_response.size()) + "\r\n\r\n" + _response;
-		std::cout << "RESPONSE CG : " << _response << std::endl;
 		remove("./vasper.cgi");
 	}
 	return (0);

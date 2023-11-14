@@ -96,14 +96,13 @@ void Multiplexer::handleReqBody(Client &client)
 
 void Multiplexer::buildTheResponse(Client &client)
 {
-		std::cout << "hhhhhhhhhhhhhhhhh" << std::endl;
-	if (client.response.isCGI == true) {
+	if (client.response.isCGI == true)
+	{
 		Location loc;
 		client.response.handleCgi(loc);
 		if (client.response._cgi_obj.know != 2)
 			client.response._response = "";
-		// std::cout << "RESPONSE : " << client.response._response << std::endl;
-		return ;
+		return;
 	}
 	if (client.isHeadSent == false)
 	{
@@ -136,7 +135,7 @@ void Multiplexer::sendResponse(const int &i, Client &client)
 	if (client._rem == false)
 		buildTheResponse(client);
 	if (client.response._cgi_obj.know == 1)
-		return ;
+		return;
 	// std::cout <<RED_BOLD << "RESPONSE : " << client.response._response << RESET<< std::endl;
 	ssize_t result = write(i, client.response._response.c_str(), client.response._response.size());
 	if (client.flag == true)
@@ -191,8 +190,6 @@ void Multiplexer::runServers()
 	{
 		_recv_temp = _recv_fds;
 		_write_temp = _write_fds;
-		
-		// std::cout << RED_BOLD << "Waiting for connections..." << RESET << std::endl;
 		if (select(fdmax + 1, &_recv_temp, &_write_temp, NULL, NULL) < 0)
 		{
 			std::cerr << "Select failed: Unable to monitor file descriptor." << std::endl;

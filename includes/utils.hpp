@@ -20,3 +20,4 @@ std::vector<std::string> splitParametrs(std::string line, std::string sep);
 std::vector<std::string> generateSubUris(const std::string &input);
 std::string strtrim(const std::string &input);
 bool is_dir(const std::string &path);
+bool file_exists(const std::string &path);
