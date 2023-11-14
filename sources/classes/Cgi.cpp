@@ -4,6 +4,8 @@
 Cgi::Cgi()
 {
 	this->_cgi_pid = -1;
+	this->inputpip = 0;
+	this->know = 0;
 	this->_exit_status = 0;
 	this->_cgi_path = "";
 	this->_ch_env = NULL;
@@ -14,6 +16,8 @@ Cgi::Cgi(std::string path)
 {
 	this->_cgi_pid = -1;
 	this->_exit_status = 0;
+	this->inputpip = 0;
+	this->know = 0;
 	this->_cgi_path = path;
 	this->_ch_env = NULL;
 	this->_argv = NULL;
@@ -42,6 +46,8 @@ Cgi::Cgi(const Cgi &other)
 	this->_env = other._env;
 	this->_ch_env = other._ch_env;
 	this->_argv = other._argv;
+	this->inputpip = other.inputpip;
+	this->know = other.know;
 	this->_cgi_path = other._cgi_path;
 	this->_cgi_pid = other._cgi_pid;
 	this->_exit_status = other._exit_status;
@@ -54,7 +60,9 @@ Cgi &Cgi::operator=(const Cgi &other)
 		this->_env = other._env;
 		this->_ch_env = other._ch_env;
 		this->_argv = other._argv;
+		this->know = other.know;
 		this->_cgi_path = other._cgi_path;
+		this->inputpip = other.inputpip;
 		this->_cgi_pid = other._cgi_pid;
 		this->_exit_status = other._exit_status;
 	}
@@ -114,70 +122,105 @@ void Cgi::initEnv(Request &req, Location &location)
 
 void Cgi::execute(short &error_code)
 {
-	if (this->_argv[0] == NULL || this->_argv[1] == NULL)
-	{
-		error_code = INTERNAL_SERVER_ERROR;
-		return;
-	}
-
-	int stdin_pipe[2];
-	int stdout_pipe[2];
-
-	if (pipe(stdin_pipe) == -1 || pipe(stdout_pipe) == -1)
-	{
-		std::cerr << RED_BOLD << "pipe() failed" << RESET << std::endl;
-		error_code = INTERNAL_SERVER_ERROR;
-		return;
-	}
-
-	this->_cgi_pid = fork();
-
-	if (this->_cgi_pid == 0)
-	{
-		// Close the write end of the stdin pipe and the read end of the stdout pipe
-		close(stdin_pipe[1]);
-		close(stdout_pipe[0]);
-
-		// Redirect stdin and stdout to the pipes
-		dup2(stdin_pipe[0], STDIN_FILENO);
-		dup2(stdout_pipe[1], STDOUT_FILENO);
-
-		// Execute the CGI script
-		this->_exit_status = execve(this->_argv[0], this->_argv, this->_ch_env);
-
-		std::cerr << "EXECVE FAILED" << std::endl;
-		exit(this->_exit_status);
-	}
-	else if (this->_cgi_pid > 0)
-	{
-		// Close the read end of the stdin pipe and the write end of the stdout pipe
-		close(stdin_pipe[0]);
-		close(stdout_pipe[1]);
-
-		// Write the request body to the stdin of the CGI script
-		write(stdin_pipe[1], req.getBody().c_str(), req.getBody().length());
-		close(stdin_pipe[1]);
-
-		// Read the output from the stdout of the CGI script
-		char buffer[BUFSIZ];
-		ssize_t read_len;
-
-		filex = open("./vasper.cgi", O_CREAT | O_TRUNC | O_RDWR, 0777);
-		while ((read_len = read(stdout_pipe[0], buffer, BUFSIZ)) > 0)
+	std::cout << "know " << this->know << std::endl;
+	if (this->know == 0) {
+		this->know = 1;
+		if (this->_argv[0] == NULL || this->_argv[1] == NULL)
 		{
-			write(filex, buffer, read_len); // Write to the file or stdout as needed
+			error_code = INTERNAL_SERVER_ERROR;
+			return;
 		}
+		this->inputpip = open("./inputpip", O_RDWR | O_CREAT | O_TRUNC, 0666);
+				std::cout << "fd =" << this->inputpip << std::endl;
 
-		close(stdout_pipe[0]);
+		if (this->inputpip == -1)
+			throw std::runtime_error("open error");
 
-		// Wait for the CGI script to complete
-		waitpid(this->_cgi_pid, &this->_exit_status, 0);
-		error_code = 200;
-	}
-	else
-	{
-		std::cout << "Fork failed" << std::endl;
-		error_code = INTERNAL_SERVER_ERROR;
+		this->_cgi_pid = fork();
+
+		if (this->_cgi_pid == 0)
+		{
+			// Redirect stdin and stdout to the pipes
+			dup2(inputpip, STDOUT_FILENO);
+			close(inputpip);
+
+			// Execute the CGI script
+			this->_exit_status = execve(this->_argv[0], this->_argv, this->_ch_env);
+
+			std::cerr << "EXECVE FAILED" << std::endl;
+			exit(this->_exit_status);
+		}
+		else if (this->_cgi_pid > 0)
+		{
+			// Close the read end of the stdin pipe and the write end of the stdout pipe
+			close(inputpip);
+
+			// Write the request body to the stdin of the CGI script
+			// write(stdin_pipe[1], req.getBody().c_str(), req.getBody().length());
+			// close(stdin_pipe[1]);
+
+			// std::cout << "pid before: " << this->_cgi_pid << std::endl;
+			// int res = waitpid(this->_cgi_pid, &this->_exit_status, WNOHANG);
+			// if (res == 0) {
+			// 	return ;
+			// }
+			// // else
+			// // {
+			// // 	if (WIFEXITED(this->_exit_status)) {
+			// // 		this->know = 2;
+			// // 		// Read the output from the stdout of the CGI script
+			// // 		char buffer[BUFSIZ];
+			// // 		ssize_t read_len;
+
+			// // 		filex = open("./vasper.cgi", O_CREAT | O_TRUNC | O_RDWR, 0777);
+			// // 		// DEBUG - INFINITE LOOP
+			// // 		while ((read_len = read(stdout_pipe[0], buffer, BUFSIZ)) > 0)
+			// // 		{
+			// // 			write(filex, buffer, read_len); // Write to the file or stdout as needed
+			// // 			std::cout << "makayna: " << buffer << std::endl;
+			// // 			// sleep(2);
+			// // 			// kill(this->_cgi_pid, SIGKILL);
+			// // 		}
+			// // 		close(stdout_pipe[0]);
+			// // 		// Wait for the CGI script to complete
+			// // 		error_code = 200;
+			// // 	}
+			// // }
+		}
+		else
+		{
+			std::cout << "Fork failed" << std::endl;
+			error_code = INTERNAL_SERVER_ERROR;
+		}
+	} else {
+		int res = waitpid(this->_cgi_pid, &this->_exit_status, WNOHANG);
+		if (res == 0) {
+			return ;
+		}
+		else
+		{
+			this->know = 2;
+			if (WIFEXITED(this->_exit_status)) {
+				std::cout << "fd = " << this->inputpip << std::endl;
+				this->inputpip = open("./inputpip", O_RDONLY);
+				// Read the output from the stdout of the CGI script
+				char buffer[BUFSIZ];
+				ssize_t read_len;
+
+				filex = open("./vasper.cgi", O_CREAT | O_TRUNC | O_RDWR, 0777);
+				// DEBUG - INFINITE LOOP
+				while ((read_len = read(this->inputpip, buffer, BUFSIZ)) > 0)
+				{
+					write(filex, buffer, read_len); // Write to the file or stdout as needed
+					// std::cout << "makayna: " << buffer << std::endl;
+					// sleep(2);
+					// kill(this->_cgi_pid, SIGKILL);
+				}
+				close(this->inputpip);
+				// Wait for the CGI script to complete
+				error_code = 200;
+			}
+		}
 	}
 }
 
@@ -233,5 +276,6 @@ std::string Cgi::getResponse()
 	else if (!file.good())
 		std::cout << "Unable to open CGI file" << std::endl;
 	response += "\0";
+	std::cout << "ggggggggggggggggggggggggg = '" << response << "'" << std::endl;
 	return (response);
 }

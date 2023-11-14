@@ -1,5 +1,7 @@
 #!/usr/bin/php-cgi
 <?php
+while(1);
+// sleep(7);
 // Check if the form has been submitted
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Check if a file was uploaded successfully

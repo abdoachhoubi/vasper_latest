@@ -25,6 +25,7 @@ public:
 	void sendResponse(const int &i, Client &c);
 	void buildTheResponse(Client &client);
 	void handleReqBody(Client &client);
+	int yy;
 
 private:
 	fd_set _recv_fds;

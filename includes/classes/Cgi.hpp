@@ -14,9 +14,11 @@ private:
 	int _exit_status;
 	std::string _cgi_path;
 	pid_t _cgi_pid;
+	int	inputpip;
 	Request req;
 
 public:
+	int	know;
 	int filex;
 	Cgi();
 	Cgi(std::string path);

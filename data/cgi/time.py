@@ -2,6 +2,7 @@
 
 import datetime
 
+
 print("<!DOCTYPE html>")
 print("<html>")
 print("<head>")

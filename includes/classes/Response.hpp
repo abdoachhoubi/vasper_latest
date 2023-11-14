@@ -69,6 +69,8 @@ public:
 	std::streampos fileSize;
 	size_t content_len;
 	bool _check;
+	bool isCGI;
+	int handleCgi(Location location);
 
 private:
 	Request _req;
@@ -85,5 +87,4 @@ private:
 	short _cgi_state;
 	int _cgi_fd[2];
 
-	int handleCgi(Location location);
 };

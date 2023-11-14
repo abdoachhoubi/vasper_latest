@@ -2,5 +2,6 @@
 
 # infinit loop
 while true; do
-echo "Hello World"
+	echo "Hello World"
+	sleep 10
 done

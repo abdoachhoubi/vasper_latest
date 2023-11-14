@@ -96,6 +96,15 @@ void Multiplexer::handleReqBody(Client &client)
 
 void Multiplexer::buildTheResponse(Client &client)
 {
+		std::cout << "hhhhhhhhhhhhhhhhh" << std::endl;
+	if (client.response.isCGI == true) {
+		Location loc;
+		client.response.handleCgi(loc);
+		if (client.response._cgi_obj.know != 2)
+			client.response._response = "";
+		// std::cout << "RESPONSE : " << client.response._response << std::endl;
+		return ;
+	}
 	if (client.isHeadSent == false)
 	{
 		client.flag = false;
@@ -126,10 +135,13 @@ void Multiplexer::sendResponse(const int &i, Client &client)
 	std::string response;
 	if (client._rem == false)
 		buildTheResponse(client);
+	if (client.response._cgi_obj.know == 1)
+		return ;
+	// std::cout <<RED_BOLD << "RESPONSE : " << client.response._response << RESET<< std::endl;
 	ssize_t result = write(i, client.response._response.c_str(), client.response._response.size());
 	if (client.flag == true)
 		client.bytes_sent += result;
-	if (result == -1)
+	if (result == -1 || client.response._cgi_obj.know == 2)
 		closeConnection(i);
 	else if (result != (ssize_t)client.response._response.size())
 	{
@@ -148,7 +160,7 @@ void Multiplexer::acceptNewConnection(Server &serv)
 	long client_address_size = sizeof(client_address);
 	int client_sock;
 	Client new_client(serv);
-	char buf[INET_ADDRSTRLEN];
+	// char buf[INET_ADDRSTRLEN];
 
 	if ((client_sock = accept(serv.getFd(), (struct sockaddr *)&client_address,
 							  (socklen_t *)&client_address_size)) == -1)
@@ -156,7 +168,7 @@ void Multiplexer::acceptNewConnection(Server &serv)
 		std::cerr << "Accept failed: Unable to accept the client connection." << std::endl;
 		return;
 	}
-	std::cout << YELLOW_BOLD << "Assigned Socket " << client_sock << " to connection from " << inet_ntop(AF_INET, &client_address, buf, INET_ADDRSTRLEN) << RESET << std::endl;
+	// std::cout << YELLOW_BOLD << "Assigned Socket " << client_sock << " to connection from " << inet_ntop(AF_INET, &client_address, buf, INET_ADDRSTRLEN) << RESET << std::endl;
 	addToSet(client_sock, _recv_fds);
 	if (fcntl(client_sock, F_SETFL, O_NONBLOCK) < 0)
 	{
@@ -179,7 +191,8 @@ void Multiplexer::runServers()
 	{
 		_recv_temp = _recv_fds;
 		_write_temp = _write_fds;
-
+		
+		// std::cout << RED_BOLD << "Waiting for connections..." << RESET << std::endl;
 		if (select(fdmax + 1, &_recv_temp, &_write_temp, NULL, NULL) < 0)
 		{
 			std::cerr << "Select failed: Unable to monitor file descriptor." << std::endl;

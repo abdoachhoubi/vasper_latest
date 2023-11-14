@@ -29,8 +29,9 @@ class Client
         bool        		isFileOpened;
         bool        		flag;
         bool			    _rem;
+        int                 _client_socket;
+		std::string test;
 
     private:
-        int                 _client_socket;
         struct sockaddr_in  _client_address;
 };
