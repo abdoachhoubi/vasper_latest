@@ -1,0 +1,9 @@
+Leaks;
+
+Ignore body if get or delete
+
+check index if cgi;
+
+cgi_post;
+
+Queries parsing;

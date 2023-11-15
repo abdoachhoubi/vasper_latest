@@ -1,6 +1,5 @@
 #include "../../includes/main.hpp"
 
-// TAG - Orthodox Canonical Form
 Cgi::Cgi()
 {
 	this->_cgi_pid = -1;
@@ -45,15 +44,7 @@ Cgi::~Cgi()
 
 Cgi::Cgi(const Cgi &other)
 {
-	this->_env = other._env;
-	this->_ch_env = other._ch_env;
-	this->_argv = other._argv;
-	this->inputpip = other.inputpip;
-	this->outputpip = other.outputpip;
-	this->know = other.know;
-	this->_cgi_path = other._cgi_path;
-	this->_cgi_pid = other._cgi_pid;
-	this->_exit_status = other._exit_status;
+	*this = other;
 }
 
 Cgi &Cgi::operator=(const Cgi &other)

@@ -1,6 +1,5 @@
 #include "../includes/main.hpp"
 
-// TAG: Prints the usage of the program
 void usage()
 {
 	std::cerr << RED_BOLD << "Error: Wrong number of arguments" << RESET << std::endl;
@@ -11,7 +10,6 @@ void usage()
 	exit(1);
 }
 
-// TAG: Handles the SIGINT and SIGTSTP signals which are sent when the user presses CTRL+C or CTRL+Z
 void signalHandler(int signal)
 {
 	if (signal == SIGINT || signal == SIGTSTP)

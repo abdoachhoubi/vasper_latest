@@ -71,7 +71,7 @@ void Multiplexer::readRequest(const int &i, Client &client)
 	{
 		client.request.parse(buffer, bytes_read);
 		memset(buffer, 0, sizeof(buffer));
-		if (client.request.parsingCompleted() || client.request.errorCode()) // 1 = parsing completed and we can work on the response.
+		if (client.request.parsingCompleted() || client.request.errorCode())
 		{
 			client.buildResponse();
 			removeFromSet(i, _recv_fds);
@@ -136,7 +136,6 @@ void Multiplexer::sendResponse(const int &i, Client &client)
 		buildTheResponse(client);
 	if (client.response._cgi_obj.know == 1)
 		return;
-	// std::cout <<RED_BOLD << "RESPONSE : " << client.response._response << RESET<< std::endl;
 	ssize_t result = write(i, client.response._response.c_str(), client.response._response.size());
 	if (client.flag == true)
 		client.bytes_sent += result;
@@ -159,7 +158,7 @@ void Multiplexer::acceptNewConnection(Server &serv)
 	long client_address_size = sizeof(client_address);
 	int client_sock;
 	Client new_client(serv);
-	// char buf[INET_ADDRSTRLEN];
+	char buf[INET_ADDRSTRLEN];
 
 	if ((client_sock = accept(serv.getFd(), (struct sockaddr *)&client_address,
 							  (socklen_t *)&client_address_size)) == -1)
@@ -167,7 +166,7 @@ void Multiplexer::acceptNewConnection(Server &serv)
 		std::cerr << "Accept failed: Unable to accept the client connection." << std::endl;
 		return;
 	}
-	// std::cout << YELLOW_BOLD << "Assigned Socket " << client_sock << " to connection from " << inet_ntop(AF_INET, &client_address, buf, INET_ADDRSTRLEN) << RESET << std::endl;
+	std::cout << YELLOW_BOLD << "Assigned Socket " << client_sock << " to connection from " << inet_ntop(AF_INET, &client_address, buf, INET_ADDRSTRLEN) << RESET << std::endl;
 	addToSet(client_sock, _recv_fds);
 	if (fcntl(client_sock, F_SETFL, O_NONBLOCK) < 0)
 	{

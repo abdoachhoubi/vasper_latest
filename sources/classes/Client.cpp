@@ -3,7 +3,6 @@
 Client::Client() {}
 Client::~Client() {}
 Client::Client(const Client &other) { *this = other; }
-/* Assinment operator */
 Client &Client::operator=(const Client &other)
 {
 	if (this != &other)

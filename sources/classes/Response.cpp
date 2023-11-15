@@ -51,10 +51,28 @@ std::string Response::generateResponse(std::string fullPath, int flag, Location 
 {
 	if (flag == 1)
 	{
+		std::vector<std::string> exts = location.getCgiExtension();
+		std::vector<std::string> paths = location.getCgiPath();
+
 		if (location.getIndexLocation() != "")
 			fullPath += location.getIndexLocation();
 		else if (_server_conf.getIndex() != "")
 			fullPath += _server_conf.getIndex();
+
+		std::string file_extension = fullPath.substr(fullPath.find_last_of(".") + 1);
+		if (location.getCGI())
+		{
+			for (size_t i = 0; i < exts.size(); i++)
+			{
+				if (((exts[i] == "*." + file_extension) || (exts[i] == "." + file_extension)))
+				{
+					isCGI = true;
+					_cgi_state = 1;
+					handleCgi(location);
+					return 0;
+				}
+			}
+		}
 		contentType = "text/html";
 	}
 	if (!fileExists(fullPath))
@@ -818,6 +836,8 @@ int Response::handleCgi(Location location)
 		std::string res = "HTTP/1.1 " + to_string(statusCode) + " " + statusTextGen(statusCode) + "\r\n";
 		_response = res + _headers + "\r\n" + "Content-Length: " + to_string(_response.size()) + "\r\n\r\n" + _response;
 		remove("./vasper.cgi");
+		remove("./outputpip");
+		remove("./inputpip");
 	}
 	return (0);
 }
