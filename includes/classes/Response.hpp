@@ -19,19 +19,15 @@ public:
 	bool isResourceFound(const std::string &fullPath);
 	std::string generateResponse(std::string fullPath, int flag, Location location);
 	void setServer(Server server);
-	void set_response(std::string response);
 	std::string get_response();
 	void setPath(std::string path);
 	std::string getPath();
-	void settype(std::string type);
 	std::string gettype();
 	void setHeader(const std::string &key, const std::string &value);
 	const std::string &getHeader(const std::string &key) const;
 	void setBody(const std::string &body);
 	const std::string &getBody() const;
 	void setStatus(int statusCode, const std::string &statusText);
-	int getStatusCode() const;
-	const std::string &getStatusText() const;
 	std::string toString();
 	int respond();
 	std::string getContentTypeFromExtension(const std::string &filePath);
@@ -39,12 +35,10 @@ public:
 	bool isResourceDeletable(const std::string &resourcePath);
 	bool deleteResource(const std::string &resourcePath);
 	bool isMethodAllowed(std::vector<std::string> methods, std::string req_method);
-	std::string generateUniqueFilename();
 	bool saveDataToFile(const std::string &filePath, const std::string &data);
 	bool fileExists(const std::string &f);
 	std::string parseBoundary(std::string &body, std::string &boundary);
 	void SaveDataToFile(const std::string &filePath, const std::string &data);
-	void AppendDataToFile(const std::string &filePath, const std::string &data);
 	int myFind(std::string src, std::string target);
 	std::string decodePath(std::string path);
 	std::string statusTextGen(int code);
@@ -57,13 +51,9 @@ public:
 	int postController(Location location);
 	int deleteController();
 
-	int getCgiState();
-	void setCgiState(int);
-
 	Cgi _cgi_obj;
 
 	void setRequest(Request req);
-	void cut_response(size_t i);
 	std::string get_headers();
 	std::string _response;
 	std::streampos fileSize;
@@ -85,6 +75,5 @@ private:
 	std::map<std::string, std::string> headers;
 
 	short _cgi_state;
-	// int _cgi_fd[2];
 
 };
