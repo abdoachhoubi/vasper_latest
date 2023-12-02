@@ -65,12 +65,9 @@ Cgi &Cgi::operator=(const Cgi &other)
 }
 
 // TAG - Setters
-void Cgi::setCgiPid(pid_t cgi_pid) { this->_cgi_pid = cgi_pid; }
 void Cgi::setCgiPath(const std::string &cgi_path) { this->_cgi_path = cgi_path; }
 
 // TAG - Getters
-const std::map<std::string, std::string> &Cgi::getEnv() const { return (this->_env); }
-const pid_t &Cgi::getCgiPid() const { return (this->_cgi_pid); }
 const std::string &Cgi::getCgiPath() const { return (this->_cgi_path); }
 
 // TAG - Initialize the environment variables
