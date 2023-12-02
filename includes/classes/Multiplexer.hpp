@@ -24,7 +24,6 @@ public:
 	void closeConnection(const int i);
 	void sendResponse(const int &i, Client &c);
 	void buildTheResponse(Client &client);
-	void handleReqBody(Client &client);
 	int yy;
 
 private:
