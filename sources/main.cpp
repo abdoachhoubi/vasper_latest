@@ -14,7 +14,6 @@ void signalHandler(int signal)
 {
 	if (signal == SIGINT || signal == SIGTSTP)
 		exit(0);
-	// TODO (close all the fds and exit)
 }
 
 int main(int ac, char **av)
