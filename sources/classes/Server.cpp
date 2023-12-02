@@ -41,7 +41,7 @@ const std::map<error_pages, std::string> &Server::getErrorPages() { return _erro
 // TAG: SETTERS
 void Server::setFd(int fd) { listenFd = fd; }
 void Server::setListen(std::string parametr) { _port = atoi(parametr.c_str()); }
-void Server::setClientMaxBodySize(std::string parametr) { clientMaxBodySize = atoi(parametr.c_str()); }
+void Server::setClientMaxBodySize(std::string parametr) { clientMaxBodySize = atof(parametr.c_str()); }
 void Server::setUploadPath(std::string uploadPath) { this->_uploadPath = uploadPath; }
 void Server::setServerName(std::string server_name) { _serverName = server_name; }
 void Server::setIndex(std::string index) { this->_index = index; }

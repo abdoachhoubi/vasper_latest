@@ -85,6 +85,6 @@ private:
 	std::map<std::string, std::string> headers;
 
 	short _cgi_state;
-	int _cgi_fd[2];
+	// int _cgi_fd[2];
 
 };

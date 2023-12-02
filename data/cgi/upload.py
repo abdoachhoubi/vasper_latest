@@ -3,7 +3,7 @@ import cgi
 import os
 
 def save_uploaded_file(file_item):
-    upload_dir = '/home/astro/Desktop/vasper/data/cgi/uploads/'  # Set the directory where you want to store uploaded files
+    upload_dir = '/nfs/homes/ibouchaf/Desktop/ooo/data/cgi/uploads/'  # Set the directory where you want to store uploaded files
 
     if not os.path.exists(upload_dir):
         os.makedirs(upload_dir)
@@ -32,7 +32,7 @@ def main():
                 print("Content-Type: text/html\r\n\r\n")
                 print("File uploaded successfully!<br>")
                 print("File Name: " + file_name + "<br>")
-                print("File Size: " + str(os.path.getsize('/home/astro/Desktop/vasper/data/cgi/uploads/' + file_name)) + " bytes<br>")
+                print("File Size: " + str(os.path.getsize('/nfs/homes/ibouchaf/Desktop/ooo/data/cgi/uploads/' + file_name)) + " bytes<br>")
             except Exception as e:
                 print("Content-Type: text/html\r\n\r\n")
                 print("Error uploading the file.<br>")

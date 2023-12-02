@@ -90,6 +90,7 @@ std::string Response::generateResponse(std::string fullPath, int flag, Location 
 	fileSize = file.tellg();
 	if (fileSize > (long long)_server_conf.getClientMaxBodySize())
 	{
+		std::cout << "SIZES   ===   " << (long long)_server_conf.getClientMaxBodySize() << std::endl; 
 		set_headers(generateErrorResponse(REQUEST_ENTITY_TOO_LARGE, _server_conf));
 		return _headers;
 	}
@@ -333,6 +334,7 @@ int Response::getController(Location location)
 				std::string response_body = autoindex_body((char *)getPath().c_str(), _req.getPath());
 				if (response_body.size() > _server_conf.getClientMaxBodySize())
 				{
+					std::cout << "SIZES auto  ===   " << (long long)_server_conf.getClientMaxBodySize() << std::endl;
 					set_headers(generateErrorResponse(REQUEST_ENTITY_TOO_LARGE, _server_conf));
 					return 0;
 				}
@@ -363,6 +365,7 @@ int Response::postController(Location location)
 {
 	if (_req.getBody().size() > _server_conf.getClientMaxBodySize())
 	{
+		std::cout << "SIZES post  ===   " << (long long)_server_conf.getClientMaxBodySize() << std::endl;
 		set_headers(generateErrorResponse(REQUEST_ENTITY_TOO_LARGE, _server_conf));
 		return 0;
 	}
