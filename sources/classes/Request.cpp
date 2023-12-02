@@ -114,7 +114,6 @@ void Request::parse(char *data, size_t size)
 				_error_code = NOT_IMPLEMENTED;
 				return;
 			}
-
 			if ((size_t)_method_index == _method_str[_method].length())
 				_state = Request_Line_First_Space;
 			break;
@@ -123,8 +122,7 @@ void Request::parse(char *data, size_t size)
 		{
 			if (character != ' ')
 			{
-				// Bad request
-				_error_code = BAD_REQUEST;
+				_error_code = NOT_IMPLEMENTED;
 				return;
 			}
 			_state = Request_Line_URI_Path_Slash;

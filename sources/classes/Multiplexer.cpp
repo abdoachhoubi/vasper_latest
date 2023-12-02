@@ -67,6 +67,8 @@ void Multiplexer::readRequest(const int &i, Client &client)
 		closeConnection(i);
 		return;
 	}
+	else if (bytes_read == 0)
+		return ;
 	else
 	{
 		client.request.parse(buffer, bytes_read);
@@ -146,7 +148,7 @@ void Multiplexer::sendResponse(const int &i, Client &client)
 		client._rem = true;
 		client.response._response = client.response._response.substr(result, client.response._response.size());
 	}
-	else if (client.bytes_sent >= (ssize_t)client.content_len || client.response._response.empty())
+	else if (client.bytes_sent >= (ssize_t)client.content_len || client.response._response.empty() || result == 0)
 		closeConnection(i);
 	else
 		client._rem = false; // send just a buffer size not all the response

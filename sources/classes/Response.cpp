@@ -309,10 +309,11 @@ int Response::getController(Location location)
 	else if (gettype() == "FOLDER")
 	{
 		bool index_exist = false;
+		std::string index_path;
+		std::string index;
 		if (location.getIndexLocation() != "" || _server_conf.getIndex() != "")
 		{
-			std::string index = location.getIndexLocation() != "" ? location.getIndexLocation() : _server_conf.getIndex();
-			std::string index_path;
+			index = location.getIndexLocation() != "" ? location.getIndexLocation() : _server_conf.getIndex();
 			if (getPath()[(int)(getPath().size() - 1)] != '/')
 				index_path = getPath() + "/" + index;
 			else
@@ -324,7 +325,24 @@ int Response::getController(Location location)
 			setPath(getPath() + "/");
 		if (!Server::isReadableAndExist(getPath(), location.getIndexLocation()) && index_exist)
 		{
-			set_headers(generateResponse(getPath(), 1, location));
+			setPath(index_path);
+			std::string file_extension = getPath().substr(getPath().find_last_of(".") + 1);
+			std::vector<std::string> exts = location.getCgiExtension();
+			std::vector<std::string> paths = location.getCgiPath();
+			if (location.getCGI())
+			{
+				for (size_t i = 0; i < exts.size(); i++)
+				{
+					if (((exts[i] == "*." + file_extension) || (exts[i] == "." + file_extension)))
+					{
+						isCGI = true;
+						_cgi_state = 1;
+						handleCgi(location);
+						return 0;
+					}
+				}
+			}
+			set_headers(generateResponse(getPath(), 0, location));
 			return 0;
 		}
 		else
