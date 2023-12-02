@@ -82,19 +82,6 @@ void Multiplexer::readRequest(const int &i, Client &client)
 	}
 }
 
-void Multiplexer::handleReqBody(Client &client)
-{
-	if (client.request.getBody().length() == 0)
-	{
-		std::string tmp;
-		std::fstream file;
-		(client.response._cgi_obj.getCgiPath().c_str());
-		std::stringstream ss;
-		ss << file.rdbuf();
-		tmp = ss.str();
-		client.request.setBody(tmp);
-	}
-}
 
 void Multiplexer::buildTheResponse(Client &client)
 {
