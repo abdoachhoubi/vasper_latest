@@ -31,11 +31,8 @@ public:
 	void execute(short &error_code);
 	void clear();
 
-	void setCgiPid(pid_t cgi_pid);
 	void setCgiPath(const std::string &cgi_path);
 
-	const std::map<std::string, std::string> &getEnv() const;
-	const pid_t &getCgiPid() const;
 	const std::string &getCgiPath() const;
 	std::string decode(std::string &path);
 
