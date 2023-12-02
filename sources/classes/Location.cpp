@@ -88,8 +88,8 @@ void Location::setMethods(std::vector<std::string> methods)
 			_methods[1] = true;
 		else if (methods[i] == "DELETE")
 			_methods[2] = true;
-		// else
-		// 	throw std::runtime_error("Error: invalid method");
+		else
+			throw std::runtime_error("Error: invalid method");
 	}
 }
 
