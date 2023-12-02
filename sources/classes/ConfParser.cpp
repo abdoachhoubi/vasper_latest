@@ -164,8 +164,6 @@ void ConfParser::createServer(std::string &config, Server &server)
 		throw std::runtime_error("Error: upload folder not exist 2");
 	if (!server.checkLocations())
 		throw std::runtime_error("Error: in Location from config file");
-	// if (!server.isValidErrorPages())
-	// 	throw std::runtime_error("Error: in ErrorPages from config file");
 }
 /* define is path is file(1), folder(2) or something else(3) */
 int ConfParser::getTypePath(std::string const path)
