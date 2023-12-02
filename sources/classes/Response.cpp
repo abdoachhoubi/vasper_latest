@@ -1,7 +1,5 @@
 #include "../../includes/main.hpp"
 
-// Constructors
-
 Response::Response()
 {
 	statusCode = SUCCESS;
