@@ -450,6 +450,12 @@ void Request::parse(char *data, size_t size)
 		}
 		case Chunked_Length_Begin:
 		{
+			// TODO HERE
+			if (_method == GET || _method == DELETE)
+			{
+				_state = Parsing_Done;
+				continue;
+			}
 			if (isxdigit(character) == 0)
 			{
 				// Bad request
@@ -576,10 +582,18 @@ void Request::parse(char *data, size_t size)
 		}
 		case Message_Body:
 		{
+			// TODO HERE
+			if (_method == GET || _method == DELETE)
+			{
+				_body_done_flag = true;
+				_state = Parsing_Done;
+				break;
+			}
 			if (_body.size() < _body_length)
 				_body.push_back(character);
 			if (_body.size() == _body_length)
 			{
+				_storage += "";
 				_body_done_flag = true;
 				_state = Parsing_Done;
 			}

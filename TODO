@@ -1,5 +1,2 @@
 Leaks;
-
-Ignore body if get or delete
-
-check index if cgi;
+Check index if cgi;
