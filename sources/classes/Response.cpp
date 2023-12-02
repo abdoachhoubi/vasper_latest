@@ -58,6 +58,7 @@ std::string Response::generateResponse(std::string fullPath, int flag, Location 
 			fullPath += location.getIndexLocation();
 		else if (_server_conf.getIndex() != "")
 			fullPath += _server_conf.getIndex();
+
 		std::string file_extension = fullPath.substr(fullPath.find_last_of(".") + 1);
 		if (location.getCGI())
 		{
@@ -89,6 +90,7 @@ std::string Response::generateResponse(std::string fullPath, int flag, Location 
 	fileSize = file.tellg();
 	if (fileSize > (long long)_server_conf.getClientMaxBodySize())
 	{
+		std::cout << "SIZES   ===   " << (long long)_server_conf.getClientMaxBodySize() << std::endl; 
 		set_headers(generateErrorResponse(REQUEST_ENTITY_TOO_LARGE, _server_conf));
 		return _headers;
 	}
@@ -317,28 +319,11 @@ int Response::getController(Location location)
 				index_path = getPath() + index;
 			if (fileExists(index_path))
 				index_exist = true;
-			setPath(index_path);
 		}
-		if (getPath()[(int)(getPath().size() - 1)] != '/' && !index_exist)
+		if (getPath()[(int)(getPath().size() - 1)] != '/')
 			setPath(getPath() + "/");
-		if (file_exists(getPath()) && index_exist)
+		if (!Server::isReadableAndExist(getPath(), location.getIndexLocation()) && index_exist)
 		{
-			std::string file_extension = getPath().substr(getPath().find_last_of(".") + 1);
-			std::vector<std::string> exts = location.getCgiExtension();
-			std::vector<std::string> paths = location.getCgiPath();
-			if (location.getCGI())
-			{
-				for (size_t i = 0; i < exts.size(); i++)
-				{
-					if (((exts[i] == "*." + file_extension) || (exts[i] == "." + file_extension)))
-					{
-						isCGI = true;
-						_cgi_state = 1;
-						handleCgi(location);
-						return 0;
-					}
-				}
-			}
 			set_headers(generateResponse(getPath(), 1, location));
 			return 0;
 		}
@@ -349,6 +334,7 @@ int Response::getController(Location location)
 				std::string response_body = autoindex_body((char *)getPath().c_str(), _req.getPath());
 				if (response_body.size() > _server_conf.getClientMaxBodySize())
 				{
+					std::cout << "SIZES auto  ===   " << (long long)_server_conf.getClientMaxBodySize() << std::endl;
 					set_headers(generateErrorResponse(REQUEST_ENTITY_TOO_LARGE, _server_conf));
 					return 0;
 				}
@@ -379,6 +365,7 @@ int Response::postController(Location location)
 {
 	if (_req.getBody().size() > _server_conf.getClientMaxBodySize())
 	{
+		std::cout << "SIZES post  ===   " << (long long)_server_conf.getClientMaxBodySize() << std::endl;
 		set_headers(generateErrorResponse(REQUEST_ENTITY_TOO_LARGE, _server_conf));
 		return 0;
 	}
