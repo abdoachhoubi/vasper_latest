@@ -14,16 +14,11 @@ Response::Response(Request &req, Server server) : _req(req), _server_conf(server
 }
 void Response::setServer(Server server) { _server_conf = server; }
 void Response::setRequest(Request req) { _req = req; }
-int Response::getStatusCode() const { return statusCode; }
-const std::string &Response::getStatusText() const { return statusText; }
 const std::string &Response::getBody() const { return body; }
 void Response::set_headers(std::string headers) { _headers = headers; }
-void Response::set_response(std::string response) { this->_response = response; }
 void Response::setPath(std::string path) { this->_path = path; }
-void Response::settype(std::string type) { this->_type = type; }
 void Response::setHeader(const std::string &key, const std::string &value) { headers[key] = value; }
 void Response::setBody(const std::string &body) { this->body = body; }
-void Response::cut_response(size_t i) { _response = _response.substr(i); }
 std::string Response::getContentType() { return contentType; }
 std::string Response::gettype() { return this->_type; }
 std::string Response::get_response() { return this->_response; }
@@ -165,15 +160,6 @@ bool Response::fileExists(const std::string &f)
 void Response::SaveDataToFile(const std::string &filePath, const std::string &data)
 {
 	std::ofstream file(filePath.c_str(), std::ios::binary);
-	if (!file.is_open())
-		return;
-	file << data;
-	file.close();
-}
-
-void Response::AppendDataToFile(const std::string &filePath, const std::string &data)
-{
-	std::ofstream file(filePath.c_str(), std::ios::binary | std::ios::app);
 	if (!file.is_open())
 		return;
 	file << data;
@@ -589,14 +575,6 @@ int Response::respond()
 	return (0);
 }
 
-std::string Response::generateUniqueFilename()
-{
-	std::srand(static_cast<unsigned int>(std::time(NULL)));
-	std::stringstream ss;
-	ss << "/upload_" << std::rand() << ".dat";
-	return ss.str();
-}
-
 // Helper function to save data to a file
 bool Response::saveDataToFile(const std::string &filePath, const std::string &data)
 {
@@ -788,15 +766,6 @@ std::string Response::generateErrorResponse(error_pages code, Server server)
 	return res;
 }
 
-void Response::setCgiState(int state)
-{
-	_cgi_state = state;
-}
-
-int Response::getCgiState()
-{
-	return (_cgi_state);
-}
 
 /* check a file for CGI (the extension is supported, the file exists and is executable) and run the CGI */
 int Response::handleCgi(Location location)
